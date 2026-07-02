@@ -9,6 +9,7 @@ import clerkWebhooks from "./controllers/clerk.js";
 
 import * as Sentry from "@sentry/node"
 import userRouter from "./routes/userRoutes.js";
+import projectRouter from "./routes/projectRoutes.js";
  
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +27,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use('/api/user', userRouter)
+app.use('/api/project', projectRouter)
 
 
 // The error handler must be registered before any other error middleware and after all controllers 

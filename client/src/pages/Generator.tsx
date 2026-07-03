@@ -3,8 +3,16 @@ import Title from "../components/Title";
 import UploadZone from "../components/UploadZone";
 import { Loader2Icon, RectangleHorizontalIcon, RectangleVerticalIcon, Wand2Icon } from "lucide-react";
 import { PrimaryButton } from "../components/Buttons";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import api from "../configs/axios";
 
 const Generator = () => {
+
+  const { user } = useUser()
+  const { getToken } = useAuth()
+  const navigate = useNavigate()
   const [name, setName] = useState("");
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
@@ -29,6 +37,46 @@ const Generator = () => {
 
   const handleGenerate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!user) return toast("Please login to generate");
+    if (
+      !productImage ||
+      !modelImage ||
+      !name ||
+      !productName ||
+      !aspectRatio
+    ) {
+      return toast("Please fill all the required fields");
+    }
+
+    try {
+      setIsGenerating(true);
+
+      const formData = new FormData();
+
+      formData.append('name', name)
+      formData.append('productName', productName)
+      formData.append('productDescription', productDescription)
+      formData.append('userPrompt', userPrompt)
+      formData.append('aspectRatio', aspectRatio)
+formData.append("images", productImage);
+formData.append("images", modelImage);
+
+      // Your API call here...
+      const token = await getToken()
+
+      const { data } = await api.post('/api/project/create', formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+
+      toast.success(data.message)
+      navigate('/result/' + data.projectId)
+
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || error.message);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -47,7 +95,7 @@ const Generator = () => {
               file={productImage}
               onClear={() => setProductImage(null)}
               onChange={(e) => handleFileChange(e, "product")}
-              
+
             />
 
             <UploadZone
@@ -118,20 +166,18 @@ const Generator = () => {
               <div className="flex gap-3">
                 <RectangleVerticalIcon
                   onClick={() => setAspectRatio("9:16")}
-                  className={`p-2.5 size-13 bg-white/6 rounded transition-all ring-2 cursor-pointer ${
-                    aspectRatio === "9:16"
-                      ? "ring-violet-500/50 bg-white/10"
-                      : "ring-transparent"
-                  }`}
+                  className={`p- 2.5 size- 13 bg - white / 6 rounded transition - all ring - 2 cursor - pointer ${aspectRatio === "9:16"
+                    ? "ring-violet-500/50 bg-white/10"
+                    : "ring-transparent"
+                    }`}
                 />
 
                 <RectangleHorizontalIcon
                   onClick={() => setAspectRatio("16:9")}
-                  className={`p-2.5 size-13 bg-white/6 rounded transition-all ring-2 cursor-pointer ${
-                    aspectRatio === "16:9"
+                  className={`p - 2.5 size - 13 bg - white / 6 rounded transition - all ring - 2 cursor - pointer ${aspectRatio === "16:9"
                       ? "ring-violet-500/50 bg-white/10"
                       : "ring-transparent"
-                  }`}
+                    } `}
                 />
               </div>
             </div>

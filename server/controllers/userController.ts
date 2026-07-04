@@ -6,25 +6,20 @@ import { prisma } from "../configs/prisma.js";
 export const getUserCredits = async (req: Request, res: Response) => {
   try {
     const { userId } = req.auth();
-
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
     const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-      select: {
-        credits: true,
-      },
+      where: { id: userId },
+      select: { credits: true },
     });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    return res.json({ credits: user.credits });
+    res.json({ credits: user?.credits });
   } catch (error: any) {
     Sentry.captureException(error);
     return res.status(500).json({ message: error.code || error.message });
@@ -41,12 +36,8 @@ export const getAllProjects = async (req: Request, res: Response) => {
     }
 
     const projects = await prisma.project.findMany({
-      where: {
-        userId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+      where: { userId, },
+      orderBy: { createdAt: "desc", },
     });
 
     return res.json({ projects });
@@ -75,9 +66,7 @@ export const getProjectById = async (req: Request, res: Response) => {
     });
 
     if (!project) {
-      return res.status(404).json({
-        message: "Project not found",
-      });
+      return res.status(404).json({ message: "Project not found", });
     }
 
     return res.json({ project });
@@ -88,10 +77,7 @@ export const getProjectById = async (req: Request, res: Response) => {
 };
 
 // Publish / Unpublish project
-export const toggleProjectPublic = async (
-  req: Request,
-  res: Response
-) => {
+export const toggleProjectPublic = async (req: Request, res: Response) => {
   try {
     const { userId } = req.auth();
 
@@ -120,18 +106,12 @@ export const toggleProjectPublic = async (
       });
     }
 
-    const updatedProject = await prisma.project.update({
-      where: {
-        id: projectId,
-      },
-      data: {
-        isPublished: !project.isPublished,
-      },
-    });
+    await prisma.project.update({
+      where: { id: projectId },
+      data: { isPublished: !project.isPublished }
+    })
+    res.json({ isPublished: !project.isPublished })
 
-    return res.json({
-      isPublished: updatedProject.isPublished,
-    });
   } catch (error: any) {
     Sentry.captureException(error);
     return res.status(500).json({ message: error.code || error.message });

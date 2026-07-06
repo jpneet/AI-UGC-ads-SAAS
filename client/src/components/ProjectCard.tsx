@@ -10,20 +10,22 @@ import {
 } from "lucide-react";
 import { GhostButton, PrimaryButton } from "./Buttons";
 
+type Props = {
+  gen: Project;
+  setGenerations: React.Dispatch<React.SetStateAction<Project[]>>;
+  forCommunity?: boolean;
+};
+
 const ProjectCard = ({
   gen,
   setGenerations,
   forCommunity = false,
-}: {
-  gen: Project;
-  setGenerations: React.Dispatch<React.SetStateAction<Project[]>>;
-  forCommunity?: boolean;
-}) => {
+}: Props) => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // close dropdown on outside click
+  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -54,6 +56,9 @@ const ProjectCard = ({
     } catch (err) {
       console.error(err);
       alert("Delete failed");
+
+      // rollback (important safety fix)
+      window.location.reload();
     }
   };
 
@@ -83,7 +88,7 @@ const ProjectCard = ({
     if (!url) return;
 
     try {
-      if (navigator.share) {
+      if (navigator.share && navigator.canShare?.({ url })) {
         await navigator.share({
           url,
           title: gen.productName,
@@ -91,26 +96,33 @@ const ProjectCard = ({
         });
       } else {
         await navigator.clipboard.writeText(url);
-        alert("Link copied");
+        alert("Link copied to clipboard");
       }
     } catch (err) {
       console.error(err);
     }
   };
 
+  const createdDate = gen.createdAt
+    ? new Date(gen.createdAt)
+    : null;
+
   return (
     <div className="mb-4 break-inside-avoid">
       <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition group">
 
         {/* MEDIA */}
-        <div className={`relative overflow-hidden ${
-          gen.aspectRatio === "9:16" ? "aspect-[9/16]" : "aspect-video"
-        }`}>
-
+        <div
+          className={`relative overflow-hidden ${
+            gen.aspectRatio === "9:16"
+              ? "aspect-[9/16]"
+              : "aspect-video"
+          }`}
+        >
           {gen.generatedImage && (
             <img
               src={gen.generatedImage}
-              alt={gen.productName}
+              alt={gen.productName || "project"}
               className="absolute inset-0 w-full h-full object-cover"
             />
           )}
@@ -153,8 +165,8 @@ const ProjectCard = ({
               </button>
 
               {menuOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-black/70 backdrop-blur rounded-lg border border-gray-600 text-sm">
-                  
+                <div className="absolute right-0 mt-2 w-40 bg-black/70 backdrop-blur rounded-lg border border-gray-600 text-sm z-10">
+
                   {gen.generatedImage && (
                     <a
                       href={gen.generatedImage}
@@ -197,10 +209,11 @@ const ProjectCard = ({
             </div>
           )}
 
-          {/* SAFE IMAGES */}
+          {/* SAFE IMAGE STACK */}
           {gen.uploadedImages?.[0] && (
             <img
               src={gen.uploadedImages[0]}
+              alt="uploaded preview"
               className="absolute bottom-3 right-3 w-14 h-14 rounded-full"
             />
           )}
@@ -214,7 +227,8 @@ const ProjectCard = ({
           </h3>
 
           <p className="text-sm text-gray-400">
-            Created: {new Date(gen.createdAt).toLocaleString()}
+            Created:{" "}
+            {createdDate?.toLocaleString() || "N/A"}
           </p>
 
           <span className="text-xs px-2 py-1 bg-white/5 rounded-full mt-2 inline-block">
@@ -248,6 +262,7 @@ const ProjectCard = ({
             </div>
           )}
         </div>
+
       </div>
     </div>
   );

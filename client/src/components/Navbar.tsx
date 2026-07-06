@@ -33,8 +33,7 @@ export default function Navbar() {
     const getUserCredits = async () => {
         try {
             const token = await getToken();
-            const { data } = await api.get('/api/user/credits', {
-                headers: {
+            const { data } = await api.get('/api/user/credits', {headers: {
                     Authorization: `Bearer ${token}`
                 }
             });

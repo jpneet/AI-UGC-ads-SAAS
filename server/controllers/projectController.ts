@@ -76,7 +76,7 @@ export const createProject = async (req: Request, res: Response) => {
 
         tempProjectId = project.id;
 
-        const model = 'gemini-3-pro-image-preview';
+        const model = 'gemini-1.5-flash';
 
         const generationConfig: GenerateContentConfig = {
             maxOutputTokens: 32768,
@@ -142,30 +142,22 @@ export const createProject = async (req: Request, res: Response) => {
         for (const part of parts) {
             if (part.inlineData) {
                 finalBuffer = Buffer.from(part.inlineData.data, 'base64')
-
             }
-
         }
-
         if (!finalBuffer) {
             throw new Error('Failed to generate image');
         }
-        const base64Image = `data: image/png;base64,${finalBuffer.toString
-            ('base64')}`
-
+        const base64Image = `data: image/png;base64,${finalBuffer.toString('base64')}`
         const uploadResult = await cloudinary.uploader.upload(base64Image,
             { resource_type: 'image' });
-
         await prisma.project.update({
             where: { id: project.id },
             data: {
                 generatedImage: uploadResult.secure_url,
                 isGenerating: false
-
             }
         })
         res.json({ projectId: project.id })
-
     } catch (error: any) {
         if (tempProjectId!) {
             // update project status and error message
@@ -221,6 +213,9 @@ export const createVideo = async (req: Request, res: Response) => {
             data: { isGenerating: true }
 
         })
+        const prompt = `make the person showcase the product which is ${project.
+            productName} ${project.productDescription && `and Product Description: $
+            {project.productDescription} `}`
 
         const model = 'veo-3.1-generate-preview'
 
@@ -235,7 +230,7 @@ export const createVideo = async (req: Request, res: Response) => {
 
         let operation: any = await ai.models.generateVideos({
             model,
-            prompt: project.userPrompt || "",
+            prompt,
             image: {
                 imageBytes: imageBytes.toString('base64'),
                 mimeType: 'image/png',
@@ -245,7 +240,6 @@ export const createVideo = async (req: Request, res: Response) => {
                 numberOfVideos: 1,
                 resolution: '720p',
             }
-
         })
 
         while (!operation.done) {
@@ -253,9 +247,7 @@ export const createVideo = async (req: Request, res: Response) => {
             await new Promise((resolve) => setTimeout(resolve, 10000));
             operation = await ai.operations.getVideosOperation({
                 operation: operation,
-
             })
-
         }
 
         const filename = `${userId}-${Date.now()}.mp4`;

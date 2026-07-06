@@ -13,6 +13,7 @@ const Generator = () => {
   const { user } = useUser()
   const { getToken } = useAuth()
   const navigate = useNavigate()
+  
   const [name, setName] = useState("");
   const [productName, setProductName] = useState("");
   const [productDescription, setProductDescription] = useState("");
@@ -58,8 +59,8 @@ const Generator = () => {
       formData.append('productDescription', productDescription)
       formData.append('userPrompt', userPrompt)
       formData.append('aspectRatio', aspectRatio)
-formData.append("images", productImage);
-formData.append("images", modelImage);
+      formData.append("images", productImage);
+      formData.append("images", modelImage);
 
       // Your API call here...
       const token = await getToken()

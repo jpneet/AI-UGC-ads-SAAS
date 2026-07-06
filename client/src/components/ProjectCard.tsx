@@ -34,25 +34,49 @@ const ProjectCard = ({
 
     console.log("deleted:", id);
 
-    // TODO: API call to delete from backend
+    // TODO: API delete call
   };
 
-  const togglePublish = async (id: string) => {
-    console.log("toggle publish:", id);
+  const togglePublish = (id: string) => {
+    setGenerations((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, isPublished: !p.isPublished } : p
+      )
+    );
+  };
 
-    // TODO: API call + update state if needed
+  const handleShare = async () => {
+    const url = gen.generatedVideo || gen.generatedImage;
+
+    if (!url) return;
+
+    if (!navigator.share) {
+      alert("Sharing is not supported on this device.");
+      return;
+    }
+
+    try {
+      await navigator.share({
+        url,
+        title: gen.productName,
+        text: gen.productDescription,
+      });
+    } catch (err) {
+      console.log("Share cancelled or failed", err);
+    }
   };
 
   return (
-    <div key={gen.id} className="mb-4 break-inside-avoid">
+    <div className="mb-4 break-inside-avoid">
       <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition group">
-        
+
         {/* preview */}
         <div
           className={`relative overflow-hidden ${
             gen?.aspectRatio === "9:16" ? "aspect-[9/16]" : "aspect-video"
           }`}
         >
+          {/* image */}
           {gen.generatedImage && (
             <img
               src={gen.generatedImage}
@@ -65,6 +89,7 @@ const ProjectCard = ({
             />
           )}
 
+          {/* video */}
           {gen.generatedVideo && (
             <video
               src={gen.generatedVideo}
@@ -80,123 +105,116 @@ const ProjectCard = ({
           {/* status badges */}
           <div className="absolute left-3 top-3 flex gap-2 items-center">
             {gen.isGenerating && (
-              <span className="px-3 py-1 rounded-full bg-yellow-500/90 text-black text-[11px] font-semibold shadow-lg backdrop-blur">
+              <span className="px-3 py-1 rounded-full bg-yellow-500/90 text-black text-[11px] font-semibold">
                 ⚡ Generating
               </span>
             )}
 
             {gen.isPublished && (
-              <span className="px-3 py-1 rounded-full bg-emerald-500/90 text-white text-[11px] font-semibold shadow-lg backdrop-blur">
+              <span className="px-3 py-1 rounded-full bg-emerald-500/90 text-white text-[11px] font-semibold">
                 🌍 Published
               </span>
             )}
 
             {!gen.generatedImage && !gen.generatedVideo && (
-              <span className="px-3 py-1 rounded-full bg-yellow-500/90 text-black text-[11px] font-semibold shadow-lg backdrop-blur animate-pulse">
+              <span className="px-3 py-1 rounded-full bg-yellow-500/90 text-black text-[11px] font-semibold animate-pulse">
                 ⚡ Generating
               </span>
             )}
           </div>
 
-          {/* Action Menu */}
+          {/* action menu */}
           {!forCommunity && (
             <div
-              className="absolute right-3 top-3 sm:opacity-0 group-hover:opacity-100 transition flex items-center gap-2"
+              className="absolute right-3 top-3 sm:opacity-0 group-hover:opacity-100 transition"
               onMouseLeave={() => setMenuOpen(false)}
             >
-              <div className="absolute top-3 right-3">
-                <EllipsisIcon
-                  className="ml-auto bg-black/10 rounded-full p-1 size-7 cursor-pointer"
-                  onClick={() => setMenuOpen((prev) => !prev)}
-                />
-              </div>
+              <EllipsisIcon
+                className="bg-black/10 rounded-full p-1 size-7 cursor-pointer"
+                onClick={() => setMenuOpen((p) => !p)}
+              />
 
-              <div className="flex flex-col items-end w-32 text-sm">
-                <ul
-                  className={`text-xs ${
-                    menuOpen ? "block" : "hidden"
-                  } overflow-hidden right-0 w-40 bg-black/50 backdrop-blur text-white border border-gray-500/50 rounded-lg shadow-md mt-2 py-1 z-10`}
-                >
-                  {gen.generatedImage && (
-                    <a
-                      href={gen.generatedImage}
-                      download
-                      className="flex gap-2 items-center px-4 py-2 hover:bg-black/10 cursor-pointer"
-                    >
-                      <ImageIcon size={14} />
-                      Download Image
-                    </a>
-                  )}
+              {menuOpen && (
+                <div className="absolute right-0 mt-2 w-40 bg-black/60 backdrop-blur border border-gray-500/40 rounded-lg shadow-lg z-10">
+                  <ul className="text-xs text-white">
 
-                  {gen.generatedVideo && (
-                    <a
-                      href={gen.generatedVideo}
-                      download
-                      className="flex gap-2 items-center px-4 py-2 hover:bg-black/10 cursor-pointer"
-                    >
-                      <PlaySquareIcon size={14} />
-                      Download Video
-                    </a>
-                  )}
+                    {gen.generatedImage && (
+                      <a
+                        href={gen.generatedImage}
+                        download
+                        className="flex gap-2 items-center px-4 py-2 hover:bg-white/10"
+                      >
+                        <ImageIcon size={14} />
+                        Download Image
+                      </a>
+                    )}
 
-                  {(gen.generatedVideo || gen.generatedImage) && (
+                    {gen.generatedVideo && (
+                      <a
+                        href={gen.generatedVideo}
+                        download
+                        className="flex gap-2 items-center px-4 py-2 hover:bg-white/10"
+                      >
+                        <PlaySquareIcon size={14} />
+                        Download Video
+                      </a>
+                    )}
+
+                    {(gen.generatedVideo || gen.generatedImage) && (
+                      <button
+                        onClick={handleShare}
+                        className="w-full flex gap-2 items-center px-4 py-2 hover:bg-white/10"
+                      >
+                        <Share2Icon size={14} />
+                        Share
+                      </button>
+                    )}
+
                     <button
-                      onClick={() =>
-                        navigator.share({
-                          url: gen.generatedVideo || gen.generatedImage,
-                          title: gen.productName,
-                          text: gen.productDescription,
-                        })
-                      }
-                      className="w-full flex gap-2 items-center px-4 py-2 hover:bg-black/10 cursor-pointer"
+                      onClick={() => handleDelete(gen.id)}
+                      className="w-full flex gap-2 items-center px-4 py-2 text-red-400 hover:bg-red-950/20"
                     >
-                      <Share2Icon size={14} />
-                      Share
+                      <Trash2Icon size={14} />
+                      Delete
                     </button>
-                  )}
-
-                  <button
-                    onClick={() => handleDelete(gen.id)}
-                    className="w-full flex gap-2 items-center px-4 py-2 hover:bg-red-950/10 text-red-400 cursor-pointer"
-                  >
-                    <Trash2Icon size={14} />
-                    Delete
-                  </button>
-                </ul>
-              </div>
+                  </ul>
+                </div>
+              )}
             </div>
           )}
 
-          {/* source images */}
-          <div className="absolute right-3 bottom-3">
-            <img
-              src={gen.uploadedImages?.[0]}
-              alt="product"
-              className="w-16 h-16 object-cover rounded-full animate-float"
-            />
-            <img
-              src={gen.uploadedImages?.[1]}
-              alt="model"
-              className="w-16 h-16 object-cover rounded-full animate-float -ml-8"
-              style={{ animationDelay: "3s" }}
-            />
+          {/* source images (safe rendering) */}
+          <div className="absolute right-3 bottom-3 flex">
+            {gen.uploadedImages?.[0] && (
+              <img
+                src={gen.uploadedImages[0]}
+                alt="product"
+                className="w-16 h-16 object-cover rounded-full animate-float"
+              />
+            )}
+
+            {gen.uploadedImages?.[1] && (
+              <img
+                src={gen.uploadedImages[1]}
+                alt="model"
+                className="w-16 h-16 object-cover rounded-full animate-float -ml-8"
+                style={{ animationDelay: "3s" }}
+              />
+            )}
           </div>
         </div>
 
         {/* details */}
         <div className="p-4">
+
           <div className="flex items-start justify-between gap-4">
-            <h3 className="font-medium text-lg mb-1">{gen.productName}</h3>
+            <h3 className="font-medium text-lg mb-1">
+              {gen.productName}
+            </h3>
 
             <p className="text-sm text-gray-400">
               Created:{" "}
-              {new Date(gen.createdAt).toLocaleString([], {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {new Date(gen.createdAt).toLocaleString()}
             </p>
           </div>
 
@@ -206,7 +224,7 @@ const ProjectCard = ({
             </p>
           )}
 
-          <div className="text-right mt-2">
+          <div className="mt-2 text-right">
             <span className="text-xs px-2 py-1 bg-white/5 rounded-full">
               Aspect: {gen.aspectRatio}
             </span>
@@ -215,8 +233,10 @@ const ProjectCard = ({
           {/* description */}
           {gen.productDescription && (
             <div className="mt-3">
-              <p className="text-xs text-gray-400 mb-1">Description</p>
-              <div className="text-sm text-gray-300 bg-white/3 p-2 rounded-md break-words">
+              <p className="text-xs text-gray-400 mb-1">
+                Description
+              </p>
+              <div className="text-sm text-gray-300 bg-white/5 p-2 rounded-md break-words">
                 {gen.productDescription}
               </div>
             </div>
@@ -244,12 +264,12 @@ const ProjectCard = ({
 
               <PrimaryButton
                 onClick={() => togglePublish(gen.id)}
-                className="rounded-md"
               >
                 {gen.isPublished ? "Unpublish" : "Publish"}
               </PrimaryButton>
             </div>
           )}
+
         </div>
       </div>
     </div>

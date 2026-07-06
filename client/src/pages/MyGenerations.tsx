@@ -5,61 +5,63 @@ import { Loader2Icon } from "lucide-react";
 import ProjectCard from "../components/ProjectCard";
 import { PrimaryButton } from "../components/Buttons";
 
-
 const MyGenerations = () => {
-   const [generations, setGenerations] = useState<Project[]>([]);
-    const [loading, setLoading] = useState(true);
-  
-    const fetchMyGenerations = async () => {
-      setTimeout(() => {
-        setGenerations(dummyGenerations);
-        setLoading(false);
-      }, 3000);
-    };
-  
-    useEffect(() => {
-      fetchMyGenerations();
-    }, []);
-  
-   return loading ? (
+  const [generations, setGenerations] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchMyGenerations = async () => {
+    setTimeout(() => {
+      setGenerations(dummyGenerations);
+      setLoading(false);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    fetchMyGenerations();
+  }, []);
+
+  return loading ? (
     <div className="flex items-center justify-center min-h-screen">
-      <Loader2Icon className='size-7 animate-spin text-indigo-400' />
+      <Loader2Icon className="size-7 animate-spin text-indigo-400" />
     </div>
   ) : (
     <div className="min-h-screen text-white p-6 md:p-12 my-28">
-      <div className="max-w-6x1 mx-auto">
+      <div className="max-w-6xl mx-auto">
         <header className="mb-12">
-          <h1 className="text-3x1 md: text-4xl font-semibold mb-4">My Generations</h1>
-          <p className="text-gray-400">View and Manage your AI-generated content</p>
+          <h1 className="text-3xl md:text-4xl font-semibold mb-4">
+            My Generations
+          </h1>
+          <p className="text-gray-400">
+            View and Manage your AI-generated content
+          </p>
         </header>
 
         {/* generations list */}
-        
-
-        <div className = "columns-1 sm:columns-2 lg:columns-3 gap-4">
-          {generations.map((gen)=>(
-            <ProjectCard key ={gen.id} gen={gen} setGenerations={setGenerations} />
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
+          {generations.map((gen) => (
+            <ProjectCard
+              key={gen.id}
+              gen={gen}
+              setGenerations={setGenerations}
+            />
           ))}
-
         </div>
 
-        {generations.length === 0 &&(
-          <div className="text-center py-20 bg-white/5 rounded-xl border
-              border-white/10">
+        {generations.length === 0 && (
+          <div className="text-center py-20 bg-white/5 rounded-xl border border-white/10">
             <h3 className="text-xl font-medium mb-2">No Generations Yet</h3>
             <p className="text-gray-400 mb-6">
               Start Creating Stunning products photo today
             </p>
 
-              <PrimaryButton onClick={()=>window.location.href = '/generate'}>
+            <PrimaryButton onClick={() => (window.location.href = "/generate")}>
               Create New Generation
-              </PrimaryButton>
-            </div>
+            </PrimaryButton>
+          </div>
         )}
       </div>
     </div>
-  
-  )
-}
+  );
+};
 
-export default MyGenerations
+export default MyGenerations;

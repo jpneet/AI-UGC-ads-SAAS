@@ -9,7 +9,7 @@
   "server": "nodemon --exec tsx server.ts",
   "build": "prisma generate && tsc",
   "postinstall": "prisma generate"
-}
+},
   "keywords": [],
   "author": "",
   "license": "ISC",

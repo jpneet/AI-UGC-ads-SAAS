@@ -1,6 +1,6 @@
 import { DollarSignIcon, FolderEditIcon, GalleryHorizontalEnd, MenuIcon, SparkleIcon, XIcon } from 'lucide-react';
 import { GhostButton, PrimaryButton } from './Buttons';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
@@ -26,11 +26,12 @@ export default function Navbar() {
     const navLinks = [
         { name: 'Home', href: '/#' },
         { name: 'Create', href: '/generate' },
+        ...(user ? [{ name: 'My Generations', href: '/my-generations' }] : []),
         { name: 'Community', href: '/community' },
         { name: 'Plans', href: '/plans' },
     ];
 
-    const getUserCredits = async () => {
+    const getUserCredits = useCallback(async () => {
         try {
             const token = await getToken();
             const { data } = await api.get('/api/user/credits', {
@@ -39,17 +40,21 @@ export default function Navbar() {
                 }
             });
             setCredits(data.credits);
-        } catch (error: any) {
-            toast.error(error?.response?.data?.message || error.message);
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } }; message?: string };
+            toast.error(err?.response?.data?.message || err.message || "An error occurred");
             console.log(error);
         }
-    };
+    }, [getToken]);
 
     useEffect(() => {
         if (user) {
-            (async () => await getUserCredits())();
+            const timer = setTimeout(() => {
+                void getUserCredits();
+            }, 0);
+            return () => clearTimeout(timer);
         }
-    }, [user, pathname]);
+    }, [user, pathname, getUserCredits]);
 
     return (
         <motion.nav

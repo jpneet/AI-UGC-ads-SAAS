@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import Title from "../components/Title";
 import UploadZone from "../components/UploadZone";
@@ -166,7 +167,7 @@ formData.append("images", modelImage);
               <div className="flex gap-3">
                 <RectangleVerticalIcon
                   onClick={() => setAspectRatio("9:16")}
-                  className={`p- 2.5 size- 13 bg - white / 6 rounded transition - all ring - 2 cursor - pointer ${aspectRatio === "9:16"
+                  className={`p-2.5 size-13 bg-white/6 rounded transition-all ring-2 cursor-pointer ${aspectRatio === "9:16"
                     ? "ring-violet-500/50 bg-white/10"
                     : "ring-transparent"
                     }`}
@@ -174,7 +175,7 @@ formData.append("images", modelImage);
 
                 <RectangleHorizontalIcon
                   onClick={() => setAspectRatio("16:9")}
-                  className={`p - 2.5 size - 13 bg - white / 6 rounded transition - all ring - 2 cursor - pointer ${aspectRatio === "16:9"
+                  className={`p-2.5 size-13 bg-white/6 rounded transition-all ring-2 cursor-pointer ${aspectRatio === "16:9"
                       ? "ring-violet-500/50 bg-white/10"
                       : "ring-transparent"
                     } `}

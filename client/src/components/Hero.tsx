@@ -1,9 +1,23 @@
+import { useState, useEffect } from 'react';
 import { ArrowRightIcon, PlayIcon, ZapIcon, CheckIcon } from 'lucide-react';
 import { PrimaryButton, GhostButton } from './Buttons';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 export default function Hero() {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setIsModalOpen(false);
+            }
+        };
+        if (isModalOpen) {
+            window.addEventListener('keydown', handleKeyDown);
+        }
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isModalOpen]);
 
     const trustedUserImages = [
         'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=50',
@@ -91,7 +105,10 @@ export default function Hero() {
                                     </PrimaryButton>
                                 </Link>
 
-                                <GhostButton className="max-sm:w-full max-sm:justify-center py-3 px-5">
+                                <GhostButton 
+                                    onClick={() => setIsModalOpen(true)}
+                                    className="max-sm:w-full max-sm:justify-center py-3 px-5"
+                                >
                                     <PlayIcon className="size-4" />
                                     WATCH DEMO
                                 </GhostButton>
@@ -213,6 +230,38 @@ export default function Hero() {
                     </div>
                 </div>
             </motion.section>
+
+            {isModalOpen && (
+                <div 
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+                    onClick={() => setIsModalOpen(false)}
+                >
+                    <div 
+                        className="relative w-full max-w-4xl bg-gray-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-white/5 bg-white/2">
+                            <h3 className="font-semibold text-lg text-white">AI UGC Ads SaaS - Demo Tour</h3>
+                            <button 
+                                onClick={() => setIsModalOpen(false)}
+                                className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+                            >
+                                <span className="text-xl px-2">✕</span>
+                            </button>
+                        </div>
+                        
+                        {/* Demo Walkthrough Player */}
+                        <div className="relative aspect-video w-full bg-black flex items-center justify-center overflow-hidden">
+                            <img 
+                                src="/demo.webp" 
+                                alt="AI UGC Ads SaaS Demo Walkthrough"
+                                className="max-w-full max-h-full object-contain"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

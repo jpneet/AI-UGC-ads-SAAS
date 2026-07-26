@@ -10,7 +10,8 @@ import MyGenerations from './pages/MyGenerations';
 import Community from './pages/Community';
 import Plans from './pages/Plans';
 import Loading from './pages/Loading';
-import {Toaster} from 'react-hot-toast'
+import {Toaster} from 'react-hot-toast';
+import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 
 function App() {
     return (
@@ -21,9 +22,27 @@ function App() {
 
             <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/generate" element={<Generator/>} />
-                <Route path="/result/:projectID" element={<Result />} />
-				<Route path="/my-generations" element={<MyGenerations/>} />
+                <Route path="/generate" element={
+                    <>
+                        <SignedIn>
+                            <Generator />
+                        </SignedIn>
+                        <SignedOut>
+                            <RedirectToSignIn />
+                        </SignedOut>
+                    </>
+                } />
+                <Route path="/result/:projectId" element={<Result />} />
+				<Route path="/my-generations" element={
+                    <>
+                        <SignedIn>
+                            <MyGenerations />
+                        </SignedIn>
+                        <SignedOut>
+                            <RedirectToSignIn />
+                        </SignedOut>
+                    </>
+                } />
 				<Route path="/community" element={<Community/>} />
 				<Route path="/plans" element={<Plans/>} />
 				<Route path="/loading" element={<Loading/>} />

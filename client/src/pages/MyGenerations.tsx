@@ -1,19 +1,33 @@
+/* eslint-disable react-hooks/set-state-in-effect, @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import type { Project } from "../types";
-import { dummyGenerations } from "../assets/assets";
 import { Loader2Icon } from "lucide-react";
 import ProjectCard from "../components/ProjectCard";
 import { PrimaryButton } from "../components/Buttons";
+import { useAuth } from "@clerk/clerk-react";
+import api from "../configs/axios";
+import toast from "react-hot-toast";
 
 const MyGenerations = () => {
   const [generations, setGenerations] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const { getToken } = useAuth();
 
   const fetchMyGenerations = async () => {
-    setTimeout(() => {
-      setGenerations(dummyGenerations);
+    try {
+      const token = await getToken();
+      const { data } = await api.get('/api/user/projects', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setGenerations(data.projects);
       setLoading(false);
-    }, 3000);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || error.message);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

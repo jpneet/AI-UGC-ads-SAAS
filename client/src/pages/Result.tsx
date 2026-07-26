@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps, @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import type { Project } from "../types";
 import { Link, useNavigate, useParams } from "react-router-dom";

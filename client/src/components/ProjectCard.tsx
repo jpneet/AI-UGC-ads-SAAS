@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, no-empty */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Dispatch, SetStateAction } from "react";
@@ -10,6 +11,9 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { GhostButton, PrimaryButton } from "./Buttons";
+import { useAuth } from "@clerk/clerk-react";
+import api from "../configs/axios";
+import toast from "react-hot-toast";
 
 interface ProjectCardProps {
   gen: Project;
@@ -24,6 +28,7 @@ const ProjectCard = ({
 }: ProjectCardProps) => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { getToken } = useAuth();
 
   const handleDelete = async (id: string) => {
     const confirmDelete = window.confirm(
@@ -32,26 +37,46 @@ const ProjectCard = ({
 
     if (!confirmDelete) return;
 
-    // TODO: Delete API
-
-    setGenerations?.((prev) =>
-      prev.filter((project) => project.id !== id)
-    );
+    try {
+      const token = await getToken();
+      await api.delete(`/api/project/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      toast.success("Project deleted successfully");
+      setGenerations?.((prev) =>
+        prev.filter((project) => project.id !== id)
+      );
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || error.message);
+    }
   };
 
   const togglePublish = async (projectId: string) => {
-    // TODO: Publish API
-
-    setGenerations?.((prev) =>
-      prev.map((project) =>
-        project.id === projectId
-          ? {
-              ...project,
-              isPublished: !project.isPublished,
-            }
-          : project
-      )
-    );
+    try {
+      const token = await getToken();
+      const { data } = await api.get(`/api/user/publish/${projectId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      toast.success(data.isPublished ? "Project published successfully" : "Project unpublished successfully");
+      setGenerations?.((prev) =>
+        prev.map((project) =>
+          project.id === projectId
+            ? {
+                ...project,
+                isPublished: data.isPublished,
+              }
+            : project
+        )
+      );
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || error.message);
+    }
   };
 
   const handleShare = async () => {
